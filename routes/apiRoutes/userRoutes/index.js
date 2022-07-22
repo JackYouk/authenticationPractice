@@ -1,11 +1,20 @@
 const router = require('express').Router();
-const bcrypt = require('bcryptjs');
 
-const {User} = require('../../../models');
+const {
+    User,
+    Todo
+} = require('../../../models');
 
 router.get('/', async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            // performs join sql query
+            include: [
+                {
+                    model: Todo
+                },
+            ],
+        });
         res.json(users);
     } catch (error) {
         res.status(500).json({error});
@@ -15,10 +24,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const newUser = req.body;
-        newUser.password = await bcrypt.hash(newUser.password, 8);
-
         const createdUser = await User.create(newUser);
-        // const newUser = await User.create(req.body);
         res.json(createdUser);
     } catch (error) {
         res.status(500).json({error});
